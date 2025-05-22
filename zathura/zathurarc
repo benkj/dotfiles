@@ -1,0 +1,9 @@
+set selection-clipboard clipboard
+set synctex true
+#set synctex-editor-command "/home/benkj/.local/bin/nvr --remote-silent %f -c %l"
+#set synctex-editor-command "/usr/local/bin/nvim --remote-silent +%l %f"
+set synctex-editor-command "/usr/local/bin/nvim --headless -c VimtexInverseSearch %{line}:%{column} '%{input}'"
+
+map \] jumplist backward
+map \[ jumplist forward
+
