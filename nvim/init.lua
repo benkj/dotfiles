@@ -67,4 +67,6 @@ require("mini")
 require("keymaps")
 require("latex")
 require("scholar")
+require("wordcount")
+
 
