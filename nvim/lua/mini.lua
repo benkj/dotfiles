@@ -107,11 +107,28 @@ require('mini.notify').setup()
 
 
 -- Mini Surround 
-
-require('mini.surround').setup({
+--
+local MiniSurround = require('mini.surround')
+MiniSurround.setup({
     -- Add custom surroundings to be used on top of builtin ones. For more
     -- information with examples, see `:h MiniSurround.config`.
-    custom_surroundings = nil,
+    custom_surroundings = {
+        L = { -- Latex environments
+            input = { [[\begin{(%w*)}.-\end{%1}]], [[^\begin{.-}().-()\end{.-}$]] },
+            output = function()
+                local latex_name = MiniSurround.user_input('Latex object name')
+                return { left = ([[\begin{%s}]]):format(latex_name), right = ([[\end{%s}]]):format(latex_name) }
+            end,
+        },
+        l = { -- Latex commands
+            input = { [[\%S+%b{}]], '^.*{().-()}$' },
+            output = function()
+                local cmd_name = MiniSurround.user_input('Latex command name')
+                if cmd_name == nil then return nil end
+                return { left = ([[\%s{]]):format(cmd_name), right = '}' }
+            end,
+        },
+    },
 
     -- Module mappings. Use `''` (empty string) to disable one.
     mappings = {
@@ -123,7 +140,7 @@ require('mini.surround').setup({
         replace = 'sr', -- Replace surrounding
         update_n_lines = 'sn', -- Update `n_lines`
 
-        suffix_last = 'l', -- Suffix to search with "prev" method
+        suffix_last = 'p', -- Suffix to search with "prev" method
         suffix_next = 'n', -- Suffix to search with "next" method
     },
 
