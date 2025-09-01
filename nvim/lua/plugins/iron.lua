@@ -96,5 +96,5 @@ return {
         vim.keymap.set('i', ';;', '<c-o>:lua require("iron.core").send_line()<cr>', {desc="Send line"})
         vim.keymap.set('n', '<space>', ':lua require("iron.core").send_line()<cr>j', {desc="Send line"})
         vim.keymap.set('i', '<c-c><space>', '<c-o>:lua require("iron.core").send_code_block()<cr>', {desc="Send code block"})
-    end,
+    end
 }

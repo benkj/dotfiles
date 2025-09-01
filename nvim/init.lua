@@ -30,9 +30,9 @@ require("lazy").setup(
     'kyazdani42/nvim-web-devicons',
     'JuliaEditorSupport/julia-vim',
     'nvim-lualine/lualine.nvim',
-    { 'echasnovski/mini.nvim', version = '*' },
+    { 'nvim-mini/mini.nvim', version = '*' },
     'nvim-tree/nvim-web-devicons',
-    { "junegunn/fzf", build = "./install --all" },
+    -- { "junegunn/fzf", build = "./install --all" },
     "junegunn/fzf.vim",
     --  LSP and treesitter
     {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},

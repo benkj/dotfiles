@@ -102,8 +102,16 @@ hipatterns.setup({
 
 -- Mini Notifier
 
-require('mini.notify').setup()
-
+require('mini.notify').setup(
+{
+  window = {
+    config = {
+        border = "rounded",
+    },
+  },
+})
+local notify_opts = { ERROR = { duration = 10000 } }
+vim.notify = require('mini.notify').make_notify(notify_opts)
 
 
 -- Mini Surround 

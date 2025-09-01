@@ -37,6 +37,8 @@ inoremap <A-Down>  <Esc><C-w>j
 inoremap <A-Up>    <Esc><C-w>k
 inoremap <A-Right> <Esc><C-w>l
 
+" command DiffOrig vert new | set buftype=nofile | read ++edit # | 0d_
+"       \ | diffthis | wincmd p | diffthis
 
 ]])
 
@@ -92,3 +94,20 @@ hi('BufferLineBufferVisible',       {fg=p.base04, bg=nil,      attr=nil,    sp=n
 hi('BufferLineFill',                {link='Normal'})
 hi('BufferLineBackground',          {fg=p.base02, bg=p.base00, attr=nil,    sp=nil}) 
 hi('BufferLineSeparator',           {fg=p.base00, bg=p.base00, attr=nil,    sp=nil}) 
+
+
+-- DiffOrig command 
+
+vim.api.nvim_create_user_command('DiffOrig', function()
+    local scratch_buffer = vim.api.nvim_create_buf(false, true)
+    local current_ft = vim.bo.filetype
+    vim.cmd('vertical sbuffer' .. scratch_buffer)
+    vim.bo[scratch_buffer].filetype = current_ft
+    vim.cmd('read ++edit #') -- load contents of previous buffer into scratch_buffer
+    vim.cmd.normal('1G"_d_') -- delete extra newline at top of scratch_buffer without overriding register
+    vim.cmd.diffthis() -- scratch_buffer
+    vim.cmd.wincmd('p')
+    vim.cmd.diffthis() -- current buffer
+end, {})
+
+vim.keymap.set('n', ',d', '<cmd>:DiffOrig<cr>', { desc = 'Difference from saved file' })
