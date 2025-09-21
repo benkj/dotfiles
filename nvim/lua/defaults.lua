@@ -20,6 +20,8 @@ set tabstop=4
 set shiftwidth=4
 set expandtab
 
+set cinoptions=g0,l1,t0
+
 " Windows movements 
 
 tnoremap <A-Left>  <C-\><C-n><C-w>h
