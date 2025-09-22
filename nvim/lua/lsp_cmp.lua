@@ -1,9 +1,9 @@
 
 --[[
-require'lspconfig'.julials.setup{
+vim.lsp.config.julials.setup{
     on_new_config = function(new_config, _)
         local julia = vim.fn.expand("~/.julia/environments/nvim-lspconfig/bin/julia")
-        if require'lspconfig'.util.path.is_file(julia) then
+        if vim.lsp.config.util.path.is_file(julia) then
             vim.notify("Julia LS Running!")
             new_config.cmd[1] = julia
         end
@@ -47,7 +47,7 @@ cmp.setup({
                 cmp_ultisnips_mappings.jump_backwards(fallback)
             end,
             { "i", "s", --[[ "c" (to enable the mapping in command mode) ]] }
-            ), 
+            ),
             ['<C-u>'] = cmp.mapping.scroll_docs(-4),
             ['<C-d>'] = cmp.mapping.scroll_docs(4),
             ['<C-y>'] = cmp.mapping.complete(),
@@ -91,56 +91,13 @@ cmp.setup.cmdline(':', {
     })
 })
 
--- Set up lspconfig.
-local capabilities = require('cmp_nvim_lsp').default_capabilities()
--- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-require('lspconfig')['julials'].setup {
-    capabilities = capabilities
-}
-require('lspconfig')['pyright'].setup {
-    capabilities = capabilities,
-}
---require('lspconfig')['clangd'].setup {
---    capabilities = capabilities
---}
-require('lspconfig')['texlab'].setup {
-    capabilities = capabilities
-}
--- require'lspconfig'.digestif.setup{}
 
-require'lspconfig'.lua_ls.setup {
-  on_init = function(client)
-    if client.workspace_folders then
-      local path = client.workspace_folders[1].name
-      if path ~= vim.fn.stdpath('config') and (vim.loop.fs_stat(path..'/.luarc.json') or vim.loop.fs_stat(path..'/.luarc.jsonc')) then
-        return
-      end
-    end
+vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials'})
 
-    client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-      runtime = {
-        -- Tell the language server which version of Lua you're using
-        -- (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT'
-      },
-      -- Make the server aware of Neovim runtime files
-      workspace = {
-        checkThirdParty = false,
-        library = {
-          vim.env.VIMRUNTIME
-          -- Depending on the usage, you might want to add additional paths here.
-          -- "${3rd}/luv/library"
-          -- "${3rd}/busted/library",
-        }
-        -- or pull in all of 'runtimepath'. NOTE: this is a lot slower and will cause issues when working on your own configuration (see https://github.com/neovim/nvim-lspconfig/issues/3189)
-        -- library = vim.api.nvim_get_runtime_file("", true)
-      }
-    })
-  end,
-  settings = {
-    Lua = {}
-  }
-}
+vim.lsp.config('*', {
+    capabilities = require('cmp_nvim_lsp').default_capabilities()
+})
+
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field
@@ -164,41 +121,3 @@ end
 vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = "Hover"})
 vim.keymap.set('n', ',ls', vim.lsp.buf.signature_help, { desc = "Signature Documentation"})
 
---[[
-
-local function hover_with_window()
-  local width = math.floor(vim.o.columns * 0.5)
-  local height = math.floor(vim.o.lines * 0.4)
-
-  vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-    border = 'rounded',
-    max_width = width,
-    max_height = height,
-  })
-
-  vim.lsp.buf.hover()
-end
-
-
-local signature_help = vim.lsp.buf.signature_help
-vim.lsp.buf.signature_help = function()
-    return signature_help {
-        border = 'rounded',
-        focusable = false,
-        max_height = math.floor(vim.o.lines * 0.5),
-        max_width = math.floor(vim.o.columns * 0.4),
-    }
-end
-
-]]--
-
-
---[[
--- If you want insert `(` after select function or method item
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-local cmp = require('cmp')
-cmp.event:on(
-'confirm_done',
-cmp_autopairs.on_confirm_done()
-)
-]]--
