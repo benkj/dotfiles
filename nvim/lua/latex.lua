@@ -27,8 +27,9 @@ fun SetLatexStuff()
     nmap ,le :VimtexErrors<cr>
 
     " TOC
-    nnoremap ,lt :call vimtex#fzf#run()<cr>
+    " nnoremap ,lt :call vimtex#fzf#run()<cr>
     "nnoremap ,lt :lua require("vimtex.fzf-lua").run()<cr>
+    nnoremap ,lt :VimtexTocOpen<cr>
     nnoremap <buffer> <space> :lua My_vimtex_fzf_toc()<cr>
 
     " convenient write
@@ -78,11 +79,14 @@ let g:vimtex_compiler_latexmk = {
 vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
     pattern = "*.tex",
     callback = function()
+
+        -- Save file with C-Space
         vim.keymap.set({'n','i','v'}, '<c-Space>', function ()
             vim.api.nvim_command('write')
             vim.notify("File saved")
         end, { desc = "Write file", buffer=true })
 
+        -- Convenient git-latexdiff wrapper
         local git_latexdiff_pick = function() 
             local actions = require'fzf-lua'.actions
             require'fzf-lua'.git_commits({
@@ -129,6 +133,7 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
                             end,
                             detach = true,
                         })
+                        return nil
                     end,
                     ['ctrl-y'] = false,
                 },
@@ -136,5 +141,33 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
         end
 
         vim.keymap.set({'n','i','v'}, ',ld', git_latexdiff_pick, { desc = "LatexDiff", buffer=true })
+
+        -- Add vimtex motions 
+        local miniclue = require('mini.clue')
+        local vimtex_motions = {
+            { "]]", desc = "Next end of a section" },
+            { "][", desc = "Next beginning of a section" },
+            { "[]", desc = "Previous end of a section" },
+            { "[[", desc = "Previous beginning of a section" },
+            { "]m", desc = "Next start of an environment `\\begin`" },
+            { "]M", desc = "Next end of an environment `\\end`" },
+            { "[m", desc = "Previous start of an environment `\\begin`" },
+            { "[M", desc = "Previous end of an environment `\\end`" },
+            { "]n", desc = "Next start of a math zone" },
+            { "]N", desc = "Next end of a math zone" },
+            { "[n", desc = "Previous start of a math zone" },
+            { "[N", desc = "Previous end of a math zone" },
+            { "]r", desc = "Next start of a frame environment" },
+            { "]R", desc = "Next end of a frame environment" },
+            { "[r", desc = "Previous start of a frame environment" },
+            { "[R", desc = "Previous end of a frame environment" },
+            { "]/", desc = "Next start of a LaTeX comment" },
+            { "]*", desc = "Next end of a LaTeX comment" },
+            { "[/", desc = "Previous start of a LaTeX comment" },
+            { "[*", desc = "Previous end of a LaTeX comment" },
+        }
+        for _, vm in ipairs(vimtex_motions) do
+            miniclue.set_mapping_desc("nxo", vm[1], vm.desc)
+        end
     end
 })

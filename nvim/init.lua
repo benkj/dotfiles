@@ -33,7 +33,7 @@ require("lazy").setup(
     { 'nvim-mini/mini.nvim', version = '*' },
     'nvim-tree/nvim-web-devicons',
     -- { "junegunn/fzf", build = "./install --all" },
-    "junegunn/fzf.vim",
+    -- "junegunn/fzf.vim",
     --  LSP and treesitter
     {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
     {"nvim-treesitter/nvim-treesitter-textobjects"},

@@ -91,13 +91,11 @@ cmp.setup.cmdline(':', {
     })
 })
 
-
-vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials'})
-
 vim.lsp.config('*', {
     capabilities = require('cmp_nvim_lsp').default_capabilities()
 })
 
+vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials'})
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field
