@@ -7,8 +7,13 @@ return {
     settings = {
         Lua = {
             completion = { callSnippet = 'Replace' },
-            -- Using stylua for formatting.
-            format = { enable = false },
+            format = {
+                enable = true,
+                defaultConfig = {
+                    indent_style = "space",
+                    indent_size = "4",
+                },
+            },
             hint = {
                 enable = true,
                 arrayIndex = 'Disable',
