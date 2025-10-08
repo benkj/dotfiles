@@ -97,6 +97,11 @@ hi('BufferLineFill',                {link='Normal'})
 hi('BufferLineBackground',          {fg=p.base02, bg=p.base00, attr=nil,    sp=nil}) 
 hi('BufferLineSeparator',           {fg=p.base00, bg=p.base00, attr=nil,    sp=nil}) 
 
+hi('DiffviewDiffAdd',               {bg=p.base0B})
+hi('DiffviewDiffText',              {bg=p.base0C})
+-- hi('DiffviewDiffChange',            {bg=p.base08})
+hi('DiffviewDiffChange',            {bg="#37222c"})
+
 
 -- DiffOrig command 
 
