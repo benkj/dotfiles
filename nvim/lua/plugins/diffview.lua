@@ -100,6 +100,7 @@ return {
                         { 'n', 'j',         actions.next_entry,                 { desc = 'Bring the cursor to the next file entry' } },
                         { 'n', 'k',         actions.prev_entry,                 { desc = 'Bring the cursor to the previous file entry' } },
                         { 'n', '<cr>',      actions.select_entry,               { desc = 'Open the diff for the selected entry' } },
+                        { 'n', 'p',         actions.select_prev_commit,         { desc = 'Select prev commit' } },
                         { 'n', '<c-b>',     actions.scroll_view(-0.25),         { desc = 'Scroll the view up' } },
                         { 'n', '<c-f>',     actions.scroll_view(0.25),          { desc = 'Scroll the view down' } },
                         { 'n', '<tab>',     actions.select_next_entry,          { desc = 'Open the diff for the next file' } },

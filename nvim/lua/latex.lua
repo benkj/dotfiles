@@ -89,6 +89,7 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
         -- Convenient git-latexdiff wrapper
         local git_latexdiff_pick = function() 
             local actions = require'fzf-lua'.actions
+            local file = vim.fn.expand("%:f")
             require'fzf-lua'.git_commits({
                 prompt = 'Select commits (tab/shift+tab)> ',
                 winopts = {
@@ -112,9 +113,11 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
                         local bufnr = vim.api.nvim_get_current_buf()
                         local win = vim.api.nvim_get_current_win()
 
-                        vim.fn.jobstart( { 'git-latexdiff',
-                            '--main', vim.fn.expand("%:f"), hash2, hash1
-                        }, {
+                        vim.notify(vim.inspect({ 'git-latexdiff',
+                            '--main', file, hash2, hash1
+                        }))
+
+                        vim.fn.jobstart( { 'git-latexdiff', '--main', file, hash2, hash1 }, {
                             stdout_buffered = false,
                             stderr_buffered = false,
                             on_stdout = function(_, data, _)
@@ -140,7 +143,75 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
             })
         end
 
-        vim.keymap.set({'n','i','v'}, ',ld', git_latexdiff_pick, { desc = "LatexDiff", buffer=true })
+        local function run_latexdiff_vc(file, rev1, rev2)
+            if rev1 == nil then
+                return nil
+            end
+            local cmd = "latexdiff-vc --git --force -r " .. rev1
+            if rev2 ~= nil then
+                cmd = cmd .. " -r "  .. rev2
+            end
+            cmd = cmd .. " " .. file
+
+            local handle = io.popen(cmd .. " 2>&1")
+            if not handle then
+                vim.notify("Failed to execute latexdiff-vc", vim.log.levels.ERROR)
+                return nil
+            end
+
+            local output = handle:read("*a")
+            local success = handle:close()
+
+            if not success then
+                vim.notify("latexdiff-vc failed:\n" .. output, vim.log.levels.ERROR)
+                return nil
+            end
+
+            local diff_file = output:match("Generated difference file%s+(.-)%s*\n")
+
+            if diff_file then
+                vim.notify("Generated: " .. diff_file, vim.log.levels.INFO)
+                return diff_file
+            else
+                vim.notify("Could not parse generated filename from output", vim.log.levels.WARN)
+                return nil
+            end
+        end
+
+        local latexdiff_vc_pick = function()
+            local actions = require'fzf-lua'.actions
+            local file = vim.fn.expand("%:f")
+            require'fzf-lua'.git_commits({
+                prompt = 'Select commits (tab/shift+tab)> ',
+                winopts = {
+                    preview = { hidden = true },
+                },
+                fzf_opts = {
+                    -- ['--multi'] = '2', -- allow 2 selections
+                },
+                fzf_args = "--multi=2",
+                actions = {
+                    ['enter'] = function(selected)
+                        local hash1 = selected[1]:match("^%S+")
+                        local hash2 = nil
+                        if #selected == 2 then
+                            hash2 = selected[2]:match("^%S+")
+                        end
+                        local diff_file = run_latexdiff_vc(file, hash1, hash2)
+
+                        vim.cmd("tabnew")
+                        vim.cmd("e " .. diff_file)
+
+                        return nil
+                    end,
+                    ['ctrl-y'] = false,
+                },
+            })
+        end
+
+
+        vim.keymap.set({'n','i','v'}, ',lD', git_latexdiff_pick, { desc = "LatexDiff", buffer=true })
+        vim.keymap.set({'n','i','v'}, ',ld', latexdiff_vc_pick, { desc = "LatexDiff", buffer=true })
 
         -- Add vimtex motions 
         local miniclue = require('mini.clue')
