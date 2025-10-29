@@ -1,84 +1,52 @@
+vim.g.tex_flavor = "latex"
 
-My_vimtex_fzf_toc = function()
-    return require("vimtex.fzf-lua").run({
-        fzf_opts = {
-            ["--with-nth"] = "{3}\t{2}",
-        }
-    })
+if vim.fn.has('macunix') == 1 then
+    vim.g.vimtex_view_method = 'skim'
+else
+    vim.g.vimtex_view_method = 'zathura'
 end
 
-vim.cmd([[
-" LaTeX configuration
-
-fun SetLatexStuff()
-    " autocmd Filetype tex  colorscheme base16-harmonic-dark
-    set tabstop=2
-    set shiftwidth=2
-
-    " remove diagnostics
-    set signcolumn=no
-    lua vim.diagnostic.config({virtual_text=false})
-
-    set spell
-    syntax on
-
-    nmap ,lc :VimtexCompile<cr>
-    nmap ,lv :VimtexView<cr>
-    nmap ,le :VimtexErrors<cr>
-
-    " TOC
-    " nnoremap ,lt :call vimtex#fzf#run()<cr>
-    "nnoremap ,lt :lua require("vimtex.fzf-lua").run()<cr>
-    nnoremap ,lt :VimtexTocOpen<cr>
-    nnoremap <buffer> <space> :lua My_vimtex_fzf_toc()<cr>
-
-    " convenient write
-    nmap §§ :write<CR>
-    nmap `` :write<CR>
-
-    " use extended words
-    " noremap  <buffer> <silent> w W
-    " noremap  <buffer> <silent> b B
-    " noremap  <buffer> <silent> e E
-endfun
-
-autocmd Filetype tex call SetLatexStuff()
-
-noremap  <buffer> <silent> <Up>   gk
-noremap  <buffer> <silent> <Down> gj
-
-let g:tex_flavor = "latex"
-
-if has('macunix')
-    let g:vimtex_view_method='skim'
-endif
-if has('unix')
-    let g:vimtex_view_method='zathura'
-end
-
-let g:vimtex_compiler_latexmk = {
-	\ 'backend' : 'nvim',
-        \ 'background' : 1,
-        \ 'build_dir' : '',
-        \ 'callback' : 1,
-        \ 'continuous' : 1,
-        \ 'executable' : 'latexmk',
-        \ 'options' : [
-        \   '-pdf',
-        \   '-verbose',
-        \   '-file-line-error',
-        \   '-synctex=1',
-        \   '-interaction=nonstopmode',
-        \ ],
-        \}
-
-]])
-
--- Save with C-Space, useful in vimtex to update the compiler
+vim.g.vimtex_compiler_latexmk = {
+    backend = 'nvim',
+    background = 1,
+    build_dir = '',
+    callback = 1,
+    continuous = 1,
+    executable = 'latexmk',
+    options = {
+        '-pdf',
+        '-verbose',
+        '-file-line-error',
+        '-synctex=1',
+        '-interaction=nonstopmode',
+    },
+}
 
 vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
     pattern = "*.tex",
     callback = function()
+        -- Spell
+        vim.opt.spell = true
+        vim.cmd('syntax on')
+
+        -- Remove diagnotics 
+        vim.wo.signcolumn = "no"
+        vim.diagnostic.config({virtual_text=false})
+
+        -- Reduce tabs
+        vim.bo.tabstop = 2
+        vim.bo.shiftwidth = 2
+
+        -- Default keymaps
+        vim.keymap.set('n', ',lc', '<cmd>VimtexCompile<cr>', 	{ desc = 'Vimtex Compile' })
+        vim.keymap.set('n', ',lx', '<cmd>VimtexClean<cr>', 	    { desc = 'Vimtex Clean' })
+        vim.keymap.set('n', ',lv', '<cmd>VimtexView<cr>', 	    { desc = 'Vimtex View' })
+        vim.keymap.set('n', ',le', '<cmd>VimtexErrors<cr>', 	{ desc = 'Vimtex Errors' })
+        vim.keymap.set('n', ',lt', '<cmd>VimtexTocOpen<cr>', 	{ desc = 'Vimtex Toc Open' })
+
+        -- Convenient to work on multiple lines
+        vim.keymap.set('n', '<Up>',   'gk', { buffer = true, silent = true })
+        vim.keymap.set('n', '<Down>', 'gj', { buffer = true, silent = true })
 
         -- Save file with C-Space
         vim.keymap.set({'n','i','v'}, '<c-Space>', function ()
@@ -86,63 +54,69 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
             vim.notify("File saved")
         end, { desc = "Write file", buffer=true })
 
-        -- Convenient git-latexdiff wrapper
-        local git_latexdiff_pick = function() 
-            local actions = require'fzf-lua'.actions
-            local file = vim.fn.expand("%:f")
-            require'fzf-lua'.git_commits({
-                prompt = 'Select commits (tab/shift+tab)> ',
-                winopts = {
-                    preview = { hidden = true },
-                },
+        vim.keymap.set('n', '§§', ':write<CR>')
+        vim.keymap.set('n', '``', ':write<CR>')
+
+        -- Toc
+        vim.keymap.set('n', '<Space>', function ()
+            return require("vimtex.fzf-lua").run({
                 fzf_opts = {
-                    ['--multi'] = '2', -- allow 2 selections
-                },
-                actions = {
-                    ['enter'] = function(selected)
-                        if #selected ~= 2 then
-                            vim.notify("Please select two commits")
-                            return
-                        end
-
-                        -- Extract the commit hashes
-                        local hash1 = selected[1]:match("^%S+")
-                        local hash2 = selected[2]:match("^%S+")
-
-                        vim.cmd("new")  -- open a new buffer for logs
-                        local bufnr = vim.api.nvim_get_current_buf()
-                        local win = vim.api.nvim_get_current_win()
-
-                        vim.notify(vim.inspect({ 'git-latexdiff',
-                            '--main', file, hash2, hash1
-                        }))
-
-                        vim.fn.jobstart( { 'git-latexdiff', '--main', file, hash2, hash1 }, {
-                            stdout_buffered = false,
-                            stderr_buffered = false,
-                            on_stdout = function(_, data, _)
-                                if data and #data > 0 then
-                                    vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
-                                    local line_count = vim.api.nvim_buf_line_count(bufnr)
-                                    vim.api.nvim_win_set_cursor(win, {line_count, 0})
-                                end
-                            end,
-                            on_stderr = function(_, data, _)
-                                if data and #data > 0 then
-                                    vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
-                                    local line_count = vim.api.nvim_buf_line_count(bufnr)
-                                    vim.api.nvim_win_set_cursor(win, {line_count, 0})
-                                end
-                            end,
-                            detach = true,
-                        })
-                        return nil
-                    end,
-                    ['ctrl-y'] = false,
-                },
+                    ["--with-nth"] = "{3}\t{2}",
+                }
             })
+        end, { desc = "Vimtex Toc", buffer=true })
+
+
+        -- Bibtex Floating window
+        local function open_bibtex_float()
+            local bibfiles = vim.fn['vimtex#bib#files']()
+
+            if not bibfiles or #bibfiles == 0 then
+                vim.notify("No BibTeX file found", vim.log.levels.WARN)
+                return
+            end
+
+            local bibfile = bibfiles[1]
+
+            -- Create a proper file buffer
+            local buf = vim.fn.bufadd(bibfile)
+            vim.fn.bufload(buf)
+            vim.bo[buf].filetype = 'bib'
+            vim.bo[buf].tabstop = 2
+            vim.bo[buf].shiftwidth = 2
+
+            -- Calculate window size
+            local width = math.floor(vim.o.columns * 0.8)
+            local height = math.floor(vim.o.lines * 0.8)
+
+            -- Open floating window
+            local win = vim.api.nvim_open_win(buf, true, {
+                relative = 'editor',
+                width = width,
+                height = height,
+                row = math.floor((vim.o.lines - height) / 2),
+                col = math.floor((vim.o.columns - width) / 2),
+                style = 'minimal',
+                border = 'rounded',
+                title = ' ' .. vim.fn.fnamemodify(bibfile, ':t') .. ' ',
+                title_pos = 'center',
+            })
+            vim.wo[win].signcolumn = "no"
+
+            pcall(function()
+                vim.treesitter.start(buf, 'bibtex')
+            end)
+
+            -- Keymaps 
+            vim.keymap.set('n', 'q', '<cmd>close<CR>', { buffer = buf, silent = true })
+            vim.keymap.set('n', 'w', '<cmd>write<CR>', { buffer = buf, silent = true })
+            vim.keymap.set('n', '<C-Space>', '<cmd>write<CR>', { buffer = buf, silent = true })
+
         end
 
+        vim.keymap.set('n', ',lb', open_bibtex_float, { buffer = true, desc = 'Open BibTeX in float' })
+
+        -- Latex Diff
         local function run_latexdiff_vc(file, rev1, rev2)
             if rev1 == nil then
                 return nil
@@ -179,16 +153,13 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
         end
 
         local latexdiff_vc_pick = function()
-            local actions = require'fzf-lua'.actions
             local file = vim.fn.expand("%:f")
             require'fzf-lua'.git_commits({
                 prompt = 'Select commits (tab/shift+tab)> ',
                 winopts = {
                     preview = { hidden = true },
                 },
-                fzf_opts = {
-                    -- ['--multi'] = '2', -- allow 2 selections
-                },
+                -- fzf_opts = { ['--multi'] = '2', },
                 fzf_args = "--multi=2",
                 actions = {
                     ['enter'] = function(selected)
@@ -199,18 +170,25 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
                         end
                         local diff_file = run_latexdiff_vc(file, hash1, hash2)
 
-                        vim.cmd("tabnew")
-                        vim.cmd("e " .. diff_file)
+                        if diff_file ~= nil then
+                            vim.cmd("tabnew")
+                            vim.cmd("e " .. diff_file)
+                            vim.cmd("VimtexCompileSS")
 
-                        return nil
+                            vim.api.nvim_create_autocmd("User", {
+                                pattern = "VimtexEventCompileSuccess",
+                                once = true,
+                                callback = function()
+                                    vim.cmd("windo bd")
+                                end
+                            })
+                        end
                     end,
                     ['ctrl-y'] = false,
                 },
             })
         end
 
-
-        vim.keymap.set({'n','i','v'}, ',lD', git_latexdiff_pick, { desc = "LatexDiff", buffer=true })
         vim.keymap.set({'n','i','v'}, ',ld', latexdiff_vc_pick, { desc = "LatexDiff", buffer=true })
 
         -- Add vimtex motions 
