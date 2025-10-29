@@ -101,15 +101,15 @@ hipatterns.setup({
 
 
 -- Mini Notifier
-
-require('mini.notify').setup(
-{
-  window = {
-    config = {
-        border = "rounded",
-    },
-  },
-})
+--[[
+local notify_win_config = function()
+    local has_statusline = vim.o.laststatus > 0
+    local pad = vim.o.cmdheight + (has_statusline and 1 or 0)
+    return { anchor = 'SE', col = vim.o.columns, row = vim.o.lines - pad, border = "rounded"}
+end
+require('mini.notify').setup({ window = { config = notify_win_config } }) 
+]]--
+require('mini.notify').setup({ window = { config = {border = "rounded"} }})
 local notify_opts = { ERROR = { duration = 10000 } }
 vim.notify = require('mini.notify').make_notify(notify_opts)
 

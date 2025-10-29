@@ -192,8 +192,10 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
         vim.keymap.set({'n','i','v'}, ',ld', latexdiff_vc_pick, { desc = "LatexDiff", buffer=true })
 
         -- Add vimtex motions 
+        -- Adapted from https://github.com/lervag/vimtex/wiki/which%E2%80%90key.nvim-support
         local miniclue = require('mini.clue')
-        local vimtex_motions = {
+        local vimtex_clues = {
+            -- Motions
             { "]]", desc = "Next end of a section" },
             { "][", desc = "Next beginning of a section" },
             { "[]", desc = "Previous end of a section" },
@@ -214,9 +216,33 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
             { "]*", desc = "Next end of a LaTeX comment" },
             { "[/", desc = "Previous start of a LaTeX comment" },
             { "[*", desc = "Previous end of a LaTeX comment" },
+            -- Delete surrounding
+            { 'dse', desc = 'environment' },
+            { 'dsc', desc = 'command' },
+            { 'ds$', desc = 'math' },
+            { 'dsd', desc = 'delimiter' },
+            -- Change surrounding
+            { 'cse', desc = 'environment' },
+            { 'csc', desc = 'command' },
+            { 'cs$', desc = 'math environment' },
+            { 'csd', desc = 'delimiter' },
+            -- Toggle surrounding
+            { 'tsc', desc = 'command' },
+            { 'tss', desc = 'star' },
+            { 'tse', desc = 'environment' },
+            { 'ts$', desc = 'math environment' },
+            { 'tsd', desc = 'delimiter' },
+            { 'tsD', desc = 'reverse delimiter' },
+            { 'tsf', desc = 'fraction' },
+            { 'tsb', desc = 'break' },
         }
-        for _, vm in ipairs(vimtex_motions) do
-            miniclue.set_mapping_desc("nxo", vm[1], vm.desc)
+        vim.list_extend(miniclue.config.triggers, {
+            { mode = 'n', keys = 'ds' },
+            { mode = 'n', keys = 'cs' },
+            { mode = 'n', keys = 'ts' },
+        })
+        for _, vm in ipairs(vimtex_clues) do
+            miniclue.set_mapping_desc("nx", vm[1], vm.desc)
         end
     end
 })
