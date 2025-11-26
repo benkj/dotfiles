@@ -118,3 +118,5 @@ vim.api.nvim_create_user_command('DiffOrig', function()
 end, {})
 
 vim.keymap.set('n', ',d', '<cmd>:DiffOrig<cr>', { desc = 'Difference from saved file' })
+
+

@@ -96,5 +96,27 @@ return {
         vim.keymap.set('i', ';;', '<c-o>:lua require("iron.core").send_line()<cr>', {desc="Send line"})
         vim.keymap.set('n', '<space>', ':lua require("iron.core").send_line()<cr>j', {desc="Send line"})
         vim.keymap.set('i', '<c-c><space>', '<c-o>:lua require("iron.core").send_code_block()<cr>', {desc="Send code block"})
+
+
+        -- Auto-close iron REPL when quitting
+        vim.api.nvim_create_autocmd("BufWinEnter", {
+            callback = function(args)
+                local bufname = vim.api.nvim_buf_get_name(args.buf)
+                if bufname:match("iron://") then
+                    -- Set buffer options to auto-close
+                    vim.bo[args.buf].buftype = "nofile"
+                    vim.bo[args.buf].bufhidden = "hide"
+                    vim.bo[args.buf].buflisted = false
+                    vim.bo[args.buf].swapfile = false
+                end
+            end,
+        })
+
+        -- Auto-hide REPL before quitting
+        vim.api.nvim_create_autocmd("QuitPre", {
+            callback = function()
+                vim.cmd("silent! IronHide")
+            end,
+        })
     end
 }

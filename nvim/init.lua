@@ -22,6 +22,7 @@ require("lazy").setup(
 {
     -- General
     'lervag/vimtex',
+    { "tpope/vim-repeat", event = "VeryLazy" },
     'SirVer/ultisnips',
     'honza/vim-snippets',
     -- 'kylechui/nvim-surround',
@@ -61,12 +62,12 @@ require("lazy").setup(
 require("defaults")
 require("lsp_cmp")
 require("ts")
-require("statusline")
 --require("jukit")
 require("mini")
 require("keymaps")
 require("latex")
-require("scholar")
+--require("scholar")
 require("wordcount")
+require("mypickers")
 
 
