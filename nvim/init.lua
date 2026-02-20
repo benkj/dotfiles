@@ -1,6 +1,6 @@
 vim.cmd([[
 let g:python_support_python2_require = 0
-let g:python3_host_prog = "/home/benkj/.venvs/nvim/bin/python3"
+let g:python3_host_prog = "~/.venvs/nvim/bin/python3"
 " let g:jukit_mappings_ext_enabled = ["py", "jl", "ipynb"]
 ]])
 

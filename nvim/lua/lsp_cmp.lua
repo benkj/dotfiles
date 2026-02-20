@@ -95,7 +95,16 @@ vim.lsp.config('*', {
     capabilities = require('cmp_nvim_lsp').default_capabilities()
 })
 
-vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials'})
+vim.lsp.config('harper_ls', {
+    filetypes = { 'markdown', 'text', 'latex', 'tex', 'plaintex' },
+    settings = {
+        ["harper-ls"] = {
+            userDictPath = "~/.config/nvim/spell/harper.txt"
+        }
+    },
+})
+
+vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials', 'harper_ls'})
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field
