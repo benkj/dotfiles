@@ -11,57 +11,93 @@ vim.lsp.config.julials.setup{
 }
 ]]
 
-local lspkind = require('lspkind')
 local cmp = require'cmp'
-local cmp_ultisnips_mappings = require("cmp_nvim_ultisnips.mappings")
+
+require("luasnip").config.setup {
+    enable_autosnippets = true,
+    update_events = { "TextChanged", "TextChangedI" },
+    snipmate_snippet_parser = {
+        override_priority = 1,
+    },
+    parser_nested_assembler = nil,
+    store_selection_keys = "<Tab>",
+}
+
+require("luasnip.loaders.from_snipmate").lazy_load({
+    paths = {
+        "~/.config/nvim/snippets/snipmate/",
+    }
+})
+
+require("luasnip.loaders.from_lua").lazy_load({
+    paths = {
+        "~/.config/nvim/snippets/luasnip/",
+    }
+})
+
+require("luasnip.loaders.from_vscode").lazy_load({
+    exclude_filetypes = { "tex", "latex", "plaintex" }
+})
+
+
+local luasnip = require('luasnip')
+local lspkind = require('lspkind')
 
 cmp.setup({
+    snippet = {
+        expand = function(args)
+            require('luasnip').lsp_expand(args.body)
+        end,
+    },
     formatting = {
         format = lspkind.cmp_format({
-            mode = 'symbol', -- show only symbol annotations
-            maxwidth = 50, -- prevent the popup from showing more than provided characters (e.g 50 will not show more than 50 characters)
-            ellipsis_char = '...'})
-        },
-        snippet = {
-            -- REQUIRED - you must specify a snippet engine
-            expand = function(args)
-                --vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-                -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-                -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-                vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-            end,
-        },
-        window = {
-            completion = cmp.config.window.bordered(),
-            documentation = cmp.config.window.bordered(),
-        },
-        mapping = cmp.mapping.preset.insert({
-            ["<Tab>"] = cmp.mapping(
-            function(fallback)
-                cmp_ultisnips_mappings.expand_or_jump_forwards(fallback)
-            end,
-            { "i", "s", --[[ "c" (to enable the mapping in command mode) ]] }
-            ),
-            ["<S-Tab>"] = cmp.mapping(
-            function(fallback)
-                cmp_ultisnips_mappings.jump_backwards(fallback)
-            end,
-            { "i", "s", --[[ "c" (to enable the mapping in command mode) ]] }
-            ),
-            ['<C-u>'] = cmp.mapping.scroll_docs(-4),
-            ['<C-d>'] = cmp.mapping.scroll_docs(4),
-            ['<C-y>'] = cmp.mapping.complete(),
-            ['<C-e>'] = cmp.mapping.abort(),
-            ['<CR>'] = cmp.mapping.confirm({ select = false }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-        }),
-        sources = cmp.config.sources({
-            { name = 'vimtex', },
-            { name = 'nvim_lsp' },
-            { name = 'nvim_lsp_signature_help' },
-            -- { name = 'latex_symbols' },
-            { name = 'ultisnips' }, -- For ultisnips users.
-            { name = 'buffer' },
+            mode = 'symbol', 
+            maxwidth = 50, 
+            ellipsis_char = '...',
         })
+    },
+    sources = cmp.config.sources({
+        { name = 'vimtex', },
+        { name = 'nvim_lsp' },
+        { name = 'nvim_lsp_signature_help' },
+        -- { name = 'latex_symbols' },
+        { name = 'luasnip' },
+        { name = 'buffer' },
+    }),
+    window = {
+        completion = cmp.config.window.bordered(),
+        documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+        ["<Tab>"] = cmp.mapping(function(fallback)
+            if luasnip.locally_jumpable(1) then
+                luasnip.jump(1)
+            elseif cmp.visible() then
+                local entry = cmp.get_selected_entry()
+                if entry then
+                    cmp.confirm()
+                else
+                    cmp.confirm({ select = true })
+                end
+            elseif luasnip.expandable() then
+                luasnip.expand()
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+        ["<S-Tab>"] = cmp.mapping(function(fallback)
+            if luasnip.locally_jumpable(-1) then
+                luasnip.jump(-1)
+            else
+                fallback()
+            end
+        end, { "i", "s" }),
+        ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+        ['<C-d>'] = cmp.mapping.scroll_docs(4),
+        ['<C-y>'] = cmp.mapping.complete(),
+        ['<C-e>'] = cmp.mapping.abort(),
+        ['<CR>'] = cmp.mapping.confirm({ select = false }),
+    }),
 })
 
 -- Set configuration for specific filetype.
@@ -104,7 +140,7 @@ vim.lsp.config('harper_ls', {
     },
 })
 
-vim.lsp.enable({'lua_ls','pyright','clangd','texlab','julials', 'harper_ls'})
+vim.lsp.enable({'lua_ls','pyright','clangd','texlab','jetls', 'harper_ls'})
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field

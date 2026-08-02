@@ -1,5 +1,5 @@
 
-
+--[[
 require('nvim-treesitter.parsers').get_parser_configs().asm = {
     ignore_install = { "latex" },
     highlight = {
@@ -7,7 +7,7 @@ require('nvim-treesitter.parsers').get_parser_configs().asm = {
          disable = { "latex" },
        },
 }
- 
+]]-- 
 
 require'nvim-treesitter.configs'.setup {
     ensure_installed = { "c", "lua", "vim", "vimdoc", "query", 

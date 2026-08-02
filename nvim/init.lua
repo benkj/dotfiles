@@ -7,61 +7,66 @@ let g:python3_host_prog = "~/.venvs/nvim/bin/python3"
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", -- latest stable release
+        lazypath,
+    })
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup(
-{
-    -- General
-    'lervag/vimtex',
-    { "tpope/vim-repeat", event = "VeryLazy" },
-    'SirVer/ultisnips',
-    'honza/vim-snippets',
-    -- 'kylechui/nvim-surround',
-    -- 'akinsho/bufferline.nvim',
-    -- 'ludovicchabant/vim-gutentags',
-    'kyazdani42/nvim-web-devicons',
-    'JuliaEditorSupport/julia-vim',
-    'nvim-lualine/lualine.nvim',
-    { 'nvim-mini/mini.nvim', version = '*' },
-    'nvim-tree/nvim-web-devicons',
-    -- { "junegunn/fzf", build = "./install --all" },
-    -- "junegunn/fzf.vim",
-    --  LSP and treesitter
-    {"nvim-treesitter/nvim-treesitter", build = ":TSUpdate"},
-    {"nvim-treesitter/nvim-treesitter-textobjects"},
-    'neovim/nvim-lspconfig',
-    'onsails/lspkind.nvim',
-    'ray-x/lsp_signature.nvim',
-    -- 'stevearc/aerial.nvim',
-    -- CMP
-    'hrsh7th/nvim-cmp',
-    'hrsh7th/cmp-nvim-lsp',
-    'hrsh7th/cmp-nvim-lsp-signature-help',
-    'hrsh7th/cmp-buffer',
-    'hrsh7th/cmp-path',
-    'hrsh7th/cmp-cmdline',
-    -- 'kdheepak/cmp-latex-symbols',
-    'quangnguyen30192/cmp-nvim-ultisnips',
-    'micangl/cmp-vimtex',
-    'f3fora/cmp-spell',
-    'RRethy/base16-nvim',
-    "rebelot/kanagawa.nvim",
-    --    {'luk400/vim-jukit', lazy=false},
-    {import = "plugins"}
-})
+    {
+        -- General
+        'lervag/vimtex',
+        { "tpope/vim-repeat", event = "VeryLazy" },
+        -- 'SirVer/ultisnips',
+        'honza/vim-snippets',
+        -- 'kylechui/nvim-surround',
+        -- 'akinsho/bufferline.nvim',
+        -- 'ludovicchabant/vim-gutentags',
+        'kyazdani42/nvim-web-devicons',
+        'JuliaEditorSupport/julia-vim',
+        'nvim-lualine/lualine.nvim',
+        { 'nvim-mini/mini.nvim', version = '*' },
+        'nvim-tree/nvim-web-devicons',
+        -- { "junegunn/fzf", build = "./install --all" },
+        -- "junegunn/fzf.vim",
+        --  LSP and treesitter
+        'neovim/nvim-lspconfig',
+        'onsails/lspkind.nvim',
+        'ray-x/lsp_signature.nvim',
+        -- 'stevearc/aerial.nvim',
+        -- CMP
+        'hrsh7th/nvim-cmp',
+        'hrsh7th/cmp-nvim-lsp',
+        'hrsh7th/cmp-nvim-lsp-signature-help',
+        'hrsh7th/cmp-buffer',
+        'hrsh7th/cmp-path',
+        'hrsh7th/cmp-cmdline',
+        'saadparwaiz1/cmp_luasnip',
+        -- 'kdheepak/cmp-latex-symbols',
+        --'quangnguyen30192/cmp-nvim-ultisnips',
+        --
+        --
+        "L3MON4D3/LuaSnip",
+        { "rafamadriz/friendly-snippets" },
+        -- "evesdropper/luasnip-latex-snippets.nvim",
+        --"iurimateus/luasnip-latex-snippets.nvim",
+        'micangl/cmp-vimtex',
+        'f3fora/cmp-spell',
+        'RRethy/base16-nvim',
+        "rebelot/kanagawa.nvim",
+        --    {'luk400/vim-jukit', lazy=false},
+        {import = "plugins"}
+    })
 
 require("defaults")
 require("lsp_cmp")
-require("ts")
+--require("ts")
 --require("jukit")
 require("mini")
 require("keymaps")
@@ -69,5 +74,5 @@ require("latex")
 --require("scholar")
 require("wordcount")
 require("mypickers")
-
+require("julia")
 

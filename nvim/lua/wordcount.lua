@@ -1,3 +1,131 @@
+
+local M = {}
+
+local ns = vim.api.nvim_create_namespace("live_text_counter")
+local tracked_mark_id = nil
+
+local function filter_and_count(lines)
+    local word_count, char_count, valid_lines = 0, 0, 0
+
+    for _, line in ipairs(lines) do
+        if not string.match(line, "^%s*[#%%]") then
+            valid_lines = valid_lines + 1
+            char_count = char_count + #line
+            for _ in string.gmatch(line, "%S+") do
+                word_count = word_count + 1
+            end
+        end
+    end
+
+    return { words = word_count, chars = char_count, lines = valid_lines }
+end
+
+local function update_winbar(bufnr)
+    if not tracked_mark_id then return end
+
+    local mark = vim.api.nvim_buf_get_extmark_by_id(bufnr, ns, tracked_mark_id, { details = true })
+    if not mark or #mark == 0 then return end
+
+    local start_row, start_col = mark[1], mark[2]
+    local end_row, end_col = mark[3].end_row, mark[3].end_col
+
+    local lines = vim.api.nvim_buf_get_text(bufnr, start_row, start_col, end_row, end_col, {})
+    local stats = filter_and_count(lines)
+
+    local winbar_str = string.format(
+        "%%#LiveCounterBar# 📊 Selection: %d Lines | %d Words | %d Chars %%*",
+        stats.lines, stats.words, stats.chars
+    )
+
+    vim.api.nvim_set_option_value("winbar", winbar_str, { win = 0 })
+end
+
+-- Toggle Function
+function M.toggle_region(is_visual)
+    local bufnr = vim.api.nvim_get_current_buf()
+
+    -- 1. If it's already pinned, UNPIN IT
+    if tracked_mark_id then
+        vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+        tracked_mark_id = nil
+        vim.api.nvim_set_option_value("winbar", "", { win = 0 })
+        print("Live Counter: Unpinned")
+        return
+    end
+
+    -- 2. If it's NOT pinned, check if we are trying to pin from normal mode
+    if not is_visual then
+        print("Live Counter: Please select text in visual mode first to pin.")
+        return
+    end
+
+    -- 3. If we are in visual mode and it's not pinned, PIN IT
+    local _, start_row, start_col, _ = unpack(vim.fn.getpos("'<"))
+    local _, end_row, end_col, _ = unpack(vim.fn.getpos("'>"))
+
+    -- Convert rows to 0-based indexing
+    start_row = start_row - 1
+    end_row = end_row - 1
+
+    -- Convert start_col to 0-based indexing safely
+    start_col = math.max(0, start_col - 1)
+
+    -- Clamp end_col to the actual line length to prevent "out of range"
+    local end_line = vim.api.nvim_buf_get_lines(bufnr, end_row, end_row + 1, false)[1] or ""
+    local max_col = #end_line
+
+    -- If end_col is v:maxcol (from Visual Line mode) or past the end, cap it
+    if end_col > max_col then
+        end_col = max_col
+    end
+
+    tracked_mark_id = vim.api.nvim_buf_set_extmark(bufnr, ns, start_row, start_col, {
+        end_row = end_row,
+        end_col = end_col,
+        hl_group = "LiveCounterRegion",
+        hl_eol = true,
+    })
+
+    update_winbar(bufnr)
+    print("Live Counter: Pinned")
+end
+
+function M.setup()
+    --local p = require('base16-colorscheme').colors
+    local p = require('mini.base16').config.palette
+    vim.api.nvim_set_hl(0, "LiveCounterRegion", { bg = p.base01, default = true })
+    vim.api.nvim_set_hl(0, "LiveCounterBar", { fg = p.base06, bg = p.base0C, bold = true, default = true })
+
+    local group = vim.api.nvim_create_augroup("LiveTextCounter", { clear = true })
+
+    vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+        group = group,
+        callback = function(args)
+            if tracked_mark_id then
+                update_winbar(args.buf)
+            end
+        end,
+    })
+
+    -- Normal mode toggle
+    vim.keymap.set("n", ",wc", function()
+        M.toggle_region(false)
+    end, { desc = "Toggle Live Count" })
+
+    -- Visual mode toggle
+    vim.keymap.set("v", ",wc", function()
+        -- Escape to normal mode first so Neovim registers the '< and '> marks
+        vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "x", false)
+        -- Defer slightly to ensure marks are updated before evaluating
+        vim.defer_fn(function() M.toggle_region(true) end, 10)
+    end, { desc = "Toggle Live Count" })
+end
+
+M.setup()
+
+return M
+
+--[[
 local M = {}
 
 -- Global variables to track window state
@@ -223,4 +351,4 @@ end, { desc = 'Toggle word count window' })
 vim.keymap.set('n', ',wc', M.toggle_word_count, { desc = 'Toggle word count window' })
 
 return M
-
+]]--
