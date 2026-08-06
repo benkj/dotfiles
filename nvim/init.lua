@@ -74,5 +74,5 @@ require("latex")
 --require("scholar")
 require("wordcount")
 require("mypickers")
-require("julia_repl")
+require("julia")
 
