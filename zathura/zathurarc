@@ -1,4 +1,5 @@
 set selection-clipboard clipboard
+set continuous-hist-save true
 set synctex true
 #set synctex-editor-command "/home/benkj/.local/bin/nvr --remote-silent %f -c %l"
 #set synctex-editor-command "/usr/local/bin/nvim --remote-silent +%l %f"

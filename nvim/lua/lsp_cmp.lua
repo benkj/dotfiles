@@ -128,3 +128,49 @@ end
 vim.keymap.set('n', 'K', vim.lsp.buf.hover, { desc = "Hover"})
 vim.keymap.set('n', ',ls', vim.lsp.buf.signature_help, { desc = "Signature Documentation"})
 
+-- 1. Disable virtual text (inline diagnostics) to avoid duplication
+vim.diagnostic.config({
+  virtual_text = false,
+  signs = true,
+  underline = true,
+  update_in_insert = false,
+  severity_sort = true,
+})
+
+-- 2. Set updatetime to a lower value (e.g., 500-1000ms) for faster triggering
+vim.o.updatetime = 500
+
+-- 3. Show diagnostics on CursorHold
+--[[
+vim.api.nvim_create_autocmd("CursorHold", {
+  callback = function()
+    local opts = {
+      focusable = false,
+      close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+      border = 'rounded',
+      source = 'always',
+      prefix = ' ',
+      scope = 'cursor',
+    }
+    vim.diagnostic.open_float(nil, opts)
+  end
+})
+
+vim.keymap.set('n', 'gk', function()
+  vim.diagnostic.config({ virtual_lines = { current_line = true }, virtual_text = false })
+
+  vim.api.nvim_create_autocmd('CursorMoved', {
+    group = vim.api.nvim_create_augroup('line-diagnostics', { clear = true }),
+    callback = function()
+      vim.diagnostic.config({ virtual_lines = false, virtual_text = true })
+      return true
+    end,
+  })
+end)
+]]--
+
+
+vim.keymap.set('n', 'gK', function()
+  local config = vim.diagnostic.config()
+  vim.diagnostic.config({ virtual_lines = not config.virtual_lines })
+end, { desc = 'Toggle diagnostic virtual_lines' })

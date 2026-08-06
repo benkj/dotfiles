@@ -70,4 +70,5 @@ require("latex")
 require("wordcount")
 require("mypickers")
 
+require("julia_repl")
 
