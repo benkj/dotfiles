@@ -1,49 +1,116 @@
+-- Enable mouse support in all modes
+vim.opt.mouse = "a"
 
-vim.cmd([[
+-- Vim theme
+-- vim.opt.termguicolors = true
+--vim.cmd.colorscheme("base16-harmonic-dark")
+-- From https://github.com/RRethy/base16-nvim/blob/master/colors/base16-harmonic-dark.vim
+local palette = {
+--[[
+    base00 = '#0b1c2c',
+    base01 = '#223b54',
+    base02 = '#405c79',
+    base03 = '#627e99',
+    base04 = '#aabcce',
+    base05 = '#cbd6e2',
+    base06 = '#e5ebf1',
+    base07 = '#f7f9fb',
+    base08 = '#bf8b56', 
+    base09 = '#bfbf56',
+    base0A = '#8bbf56',
+    base0B = '#56bf8b',
+    base0C = '#568bbf',
+    base0D = '#8b56bf',
+    base0E = '#bf568b',
+    base0F = '#bf5656'
+]]--
+    base00 = '#0b1c2c',
+    base01 = '#223b54',
+    base02 = '#405c79',
+    base03 = '#627e99',
+    base04 = '#aabcce',
+    base05 = '#cbd6e2',
+    base06 = '#e5ebf1',
+    base07 = '#f7f9fb',
+    base08 = '#bf8b56', 
+    base09 = '#bfbf56',
+    base0A = '#8bbf56',
+    base0B = '#56bf8b',
+    base0C = '#568bbf',
+    base0D = '#8b56bf',
+    base0E = '#bf568b',
+    base0F = '#bf5656'
+}
 
-set mouse=a
+require('mini.base16').setup({
+    palette = palette,
+    use_cterm = true,
+    plugins = {
+        default = true,
+        --['nvim-mini/mini.nvim'] = false,
+        ['ggandor/leap.nvim'] = true,
+        --['hrsh7th/nvim-cmp'] = false,
+        ['ibhagwan/fzf-lua'] = true,
+        ['nvim-lualine/lualine.nvim'] = true,
+    },
+})
 
-set termguicolors
+local lualine_theme = require('lualine.themes.auto')
+lualine_theme.normal.a.bg = palette.base0D
 
-colorscheme base16-harmonic-dark
+for _, mode in ipairs({ 'normal', 'insert', 'visual', 'replace', 'command', 'inactive' }) do
+  if lualine_theme[mode] and lualine_theme[mode].b then
+    lualine_theme[mode].b.bg = palette.base01
+  end
+end
 
-syntax enable
-syntax on 
+require('lualine').setup({
+  options = {
+      icons_enabled = true,
+      theme = lualine_theme,
+  }
+})
 
-set clipboard+=unnamedplus
+vim.api.nvim_set_hl(0, "MiniHipatternsCell", { bg = palette.base0C, fg = palette.base0C})
+vim.api.nvim_set_hl(0, "FloatBorder", { bg = palette.base00, fg = palette.base05})
+vim.api.nvim_set_hl(0, "FloatTitle", { bg = palette.base00, fg = palette.base0D})
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = palette.base00, fg = palette.base05})
+for _, cs in ipairs({ "MiniClueNextKey", "MiniClueSeparator","MiniFilesTitle", "MiniFilesTitleFocused", "MiniFilesDirectory", "MiniClueTitle"}) do
+    vim.api.nvim_set_hl(0, cs, { bg = palette.base00, fg = palette.base0C})
+end
+--[[vim.api.nvim_set_hl(0, "MiniClueNextKey", { bg = palette.base00, fg = palette.base0C})
+vim.api.nvim_set_hl(0, "MiniClueSeparator", { bg = palette.base00, fg = palette.base0C})
+vim.api.nvim_set_hl(0, "MiniFilesTitle", { bg = palette.base00, fg = palette.base0C})
+vim.api.nvim_set_hl(0, "MiniFilesTitleFocused", { bg = palette.base00, fg = palette.base0C})
+]]--
 
-" note that you must keep noinsert in completeopt, the others are optional
-set completeopt=noinsert,menuone,noselect
-set shortmess+=c
+-- Leap 
+vim.api.nvim_set_hl(0, 'LeapLabel', { fg = palette.base00, bg = palette.base08, bold = true })
+vim.api.nvim_set_hl(0, 'LeapMatch', { fg = palette.base08, bold = true, underline = true })
 
-set tabstop=4
-set shiftwidth=4
-set expandtab
 
-set cinoptions=g0,l1,t0
+-- Enable syntax highlighting 
+-- vim.cmd.syntax("enable")
+-- vim.cmd.syntax("on")
 
-" Windows movements 
+-- Use the system clipboard
+vim.opt.clipboard:append("unnamedplus")
 
-tnoremap <A-Left>  <C-\><C-n><C-w>h
-tnoremap <A-Down>  <C-\><C-n><C-w>j
-tnoremap <A-Up>    <C-\><C-n><C-w>k
-tnoremap <A-Right> <C-\><C-n><C-w>l
+-- note that you must keep noinsert in completeopt, the others are optional
+vim.opt.completeopt = { "noinsert", "menuone", "noselect" }
+vim.opt.shortmess:append("c")
 
-nnoremap <A-Left>  <Esc><C-w>h
-nnoremap <A-Down>  <Esc><C-w>j
-nnoremap <A-Up>    <Esc><C-w>k
-nnoremap <A-Right> <Esc><C-w>l
+-- Indentation settings
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
 
-inoremap <A-Left>  <Esc><C-w>h
-inoremap <A-Down>  <Esc><C-w>j
-inoremap <A-Up>    <Esc><C-w>k
-inoremap <A-Right> <Esc><C-w>l
+-- Wrap long lines at words.
+vim.o.linebreak = true
 
-" command DiffOrig vert new | set buftype=nofile | read ++edit # | 0d_
-"       \ | diffthis | wincmd p | diffthis
 
-]])
-
+-- C-indenting options
+vim.opt.cinoptions = "g0,l1,t0"
 
 vim.wo.number = true
 vim.wo.relativenumber = true
@@ -55,7 +122,7 @@ vim.o.mousescroll = 'ver:3,hor:0'
 vim.o.winborder = 'rounded'
 
 -- color of the relative numbers
-vim.api.nvim_set_hl(0, 'LineNr', { fg = "#405c79"})
+vim.api.nvim_set_hl(0, 'LineNr', { fg = palette.base02, bg = palette.base00})
 
 
 -- restore previos position 
@@ -89,7 +156,8 @@ local hi = function(group, args)
   vim.cmd(command)
 end
 
-local p = require('base16-colorscheme').colors
+--local p = require('base16-colorscheme').colors
+local p = palette
 
 hi('BufferLineBuffer',              {fg=p.base04, bg=nil,      attr=nil,    sp=nil})
 hi('BufferLineBufferVisible',       {fg=p.base04, bg=nil,      attr=nil,    sp=nil})

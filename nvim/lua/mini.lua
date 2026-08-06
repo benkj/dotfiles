@@ -81,6 +81,14 @@ require('mini.ai').setup({
     }
 })
 
+local ts_move=require("nvim-treesitter-textobjects.move")
+vim.keymap.set({ "n", "x", "o" }, "]f", function()
+    ts_move.goto_next_start("@function.outer", "textobjects")
+end)
+vim.keymap.set({ "n", "x", "o" }, "[f", function()
+    ts_move.goto_previous_start("@function.outer", "textobjects")
+end)
+
 
 -- Mini Hi Patterns
 --
@@ -90,9 +98,9 @@ hipatterns.setup({
     highlighters = {
         notebook  = {
             pattern = '^#[ |]%%%%.*',
-            -- group = 'MiniHipatternsNote', 
-            group = hipatterns.compute_hex_color_group('#568bbf', 'bg'),
-            extmark_opts = { line_hl_group = 'MiniHipatternsNote' },
+            group = 'MiniHipatternsCell',
+            -- group = hipatterns.compute_hex_color_group('#568bbf', 'bg'),
+            extmark_opts = { line_hl_group = 'MiniHipatternsCell' },
             -- extmark_opts = { line_hl_group = hipatterns.compute_hex_color_group('#568bbf', 'line') }
         },
         hex_color = hipatterns.gen_highlighter.hex_color(),

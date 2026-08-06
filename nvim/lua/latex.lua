@@ -45,8 +45,8 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
         vim.keymap.set('n', ',lt', '<cmd>VimtexTocOpen<cr>', 	{ desc = 'Vimtex Toc Open' })
 
         -- Convenient to work on multiple lines
-        vim.keymap.set('n', '<Up>',   'gk', { buffer = true, silent = true })
-        vim.keymap.set('n', '<Down>', 'gj', { buffer = true, silent = true })
+        --vim.keymap.set('n', '<Up>',   'gk', { buffer = true, silent = true })
+        --vim.keymap.set('n', '<Down>', 'gj', { buffer = true, silent = true })
 
         -- Save file with C-Space
         vim.keymap.set({'n','i','v'}, '<c-Space>', function ()
@@ -252,11 +252,11 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
 })
 
 vim.api.nvim_create_autocmd("BufEnter", {
-  callback = function()
-    if vim.bo.buftype == "quickfix" and vim.fn.winnr('$') < 2 then
-      vim.cmd('quit!')
+    callback = function()
+        if vim.bo.buftype == "quickfix" and vim.fn.winnr('$') < 2 then
+            vim.cmd('quit!')
+        end
     end
-  end
 })
 
 
@@ -264,88 +264,88 @@ vim.api.nvim_create_autocmd("BufEnter", {
 -- Usage: Add to your Neovim config and run :RemoveBibDuplicates
 
 local function remove_bibtex_duplicates()
-  local buf = vim.api.nvim_get_current_buf()
-  local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
-  
-  local entries = {}
-  local seen_keys = {}
-  local current_entry = {}
-  local in_entry = false
-  local duplicate_count = 0
-  
-  for i, line in ipairs(lines) do
-    -- Check if line starts a new entry
-    local entry_start = line:match("^%s*@%w+%s*{%s*([^,]+)")
-    
-    if entry_start then
-      -- Save previous entry if it exists and is not duplicate
-      if in_entry and #current_entry > 0 then
+    local buf = vim.api.nvim_get_current_buf()
+    local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+
+    local entries = {}
+    local seen_keys = {}
+    local current_entry = {}
+    local in_entry = false
+    local duplicate_count = 0
+
+    for i, line in ipairs(lines) do
+        -- Check if line starts a new entry
+        local entry_start = line:match("^%s*@%w+%s*{%s*([^,]+)")
+
+        if entry_start then
+            -- Save previous entry if it exists and is not duplicate
+            if in_entry and #current_entry > 0 then
+                local key = current_entry.key
+                if not seen_keys[key] then
+                    seen_keys[key] = true
+                    for _, entry_line in ipairs(current_entry.lines) do
+                        table.insert(entries, entry_line)
+                    end
+                else
+                    duplicate_count = duplicate_count + 1
+                end
+            end
+
+            -- Start new entry
+            in_entry = true
+            current_entry = {
+                key = entry_start:gsub("%s+", ""),
+                lines = {line}
+            }
+        elseif in_entry then
+            -- Continue current entry
+            table.insert(current_entry.lines, line)
+
+            -- Check if entry ends
+            if line:match("^%s*}%s*$") then
+                in_entry = false
+            end
+        else
+            -- Line outside of entries (comments, preambles, etc.)
+            table.insert(entries, line)
+        end
+    end
+
+    -- Don't forget the last entry
+    if in_entry and #current_entry > 0 then
         local key = current_entry.key
         if not seen_keys[key] then
-          seen_keys[key] = true
-          for _, entry_line in ipairs(current_entry.lines) do
-            table.insert(entries, entry_line)
-          end
+            seen_keys[key] = true
+            for _, entry_line in ipairs(current_entry.lines) do
+                table.insert(entries, entry_line)
+            end
         else
-          duplicate_count = duplicate_count + 1
+            duplicate_count = duplicate_count + 1
         end
-      end
-      
-      -- Start new entry
-      in_entry = true
-      current_entry = {
-        key = entry_start:gsub("%s+", ""),
-        lines = {line}
-      }
-    elseif in_entry then
-      -- Continue current entry
-      table.insert(current_entry.lines, line)
-      
-      -- Check if entry ends
-      if line:match("^%s*}%s*$") then
-        in_entry = false
-      end
-    else
-      -- Line outside of entries (comments, preambles, etc.)
-      table.insert(entries, line)
     end
-  end
-  
-  -- Don't forget the last entry
-  if in_entry and #current_entry > 0 then
-    local key = current_entry.key
-    if not seen_keys[key] then
-      seen_keys[key] = true
-      for _, entry_line in ipairs(current_entry.lines) do
-        table.insert(entries, entry_line)
-      end
-    else
-      duplicate_count = duplicate_count + 1
-    end
-  end
-  
-  -- Replace buffer content
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, entries)
-  
-  -- Notify user
-  if duplicate_count > 0 then
-    vim.notify(
-      string.format("Removed %d duplicate entr%s", 
-        duplicate_count, 
-        duplicate_count == 1 and "y" or "ies"
-      ),
-      vim.log.levels.INFO
+
+    -- Replace buffer content
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, entries)
+
+    -- Notify user
+    if duplicate_count > 0 then
+        vim.notify(
+            string.format("Removed %d duplicate entr%s", 
+            duplicate_count, 
+            duplicate_count == 1 and "y" or "ies"
+        ),
+        vim.log.levels.INFO
     )
-  else
+else
     vim.notify("No duplicates found", vim.log.levels.INFO)
-  end
+end
 end
 
 -- Create user command
 vim.api.nvim_create_user_command(
-  'RemoveBibDuplicates',
-  remove_bibtex_duplicates,
-  { desc = 'Remove duplicate entries from BibTeX file' }
+    'RemoveBibDuplicates',
+    remove_bibtex_duplicates,
+    { desc = 'Remove duplicate entries from BibTeX file' }
 )
 
 -- Optional: Create a keybinding (uncomment to use)
