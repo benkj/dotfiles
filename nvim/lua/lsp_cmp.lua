@@ -43,6 +43,17 @@ require("luasnip.loaders.from_vscode").lazy_load({
 local luasnip = require('luasnip')
 local lspkind = require('lspkind')
 
+local function in_latex_ref()
+    if vim.bo.filetype ~= 'tex' and vim.bo.filetype ~= 'plaintex' then
+        return false
+    end
+    local line = vim.api.nvim_get_current_line()
+    local col = vim.api.nvim_win_get_cursor(0)[2]
+    local before = line:sub(1, col)
+    return before:match('\\%a*ref{[^}]*$') ~= nil
+        or before:match('\\%a*cite{[^}]*$') ~= nil
+end
+
 cmp.setup({
     snippet = {
         expand = function(args)
@@ -62,7 +73,12 @@ cmp.setup({
         { name = 'nvim_lsp_signature_help' },
         -- { name = 'latex_symbols' },
         { name = 'luasnip' },
-        { name = 'buffer' },
+        {
+            name = 'buffer',
+            entry_filter = function()
+                return not in_latex_ref()
+            end,
+        },
     }),
     window = {
         completion = cmp.config.window.bordered(),
@@ -140,7 +156,14 @@ vim.lsp.config('harper_ls', {
     },
 })
 
-vim.lsp.enable({'lua_ls','pyright','clangd','texlab','jetls', 'harper_ls'})
+vim.lsp.enable({
+    'lua_ls',
+    'pyright',
+    'clangd',
+    'texlab',
+    'jetls',
+    --'harper_ls'
+})
 
 local hover = vim.lsp.buf.hover
 ---@diagnostic disable-next-line: duplicate-set-field
