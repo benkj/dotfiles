@@ -144,6 +144,10 @@ MiniSurround.setup({
                 return { left = ([[\%s{]]):format(cmd_name), right = '}' }
             end,
         },
+        q = { -- LaTeX-style quotes: ``stuff''
+            input = { [[``.-'']], [[^``().-()''$]] },
+            output = { left = '``', right = "''" },
+        },
     },
 
     -- Module mappings. Use `''` (empty string) to disable one.

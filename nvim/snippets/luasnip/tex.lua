@@ -159,6 +159,10 @@ ls.add_snippets("tex", {
     s({ trig = "xx", dscr = "\\times", condition = math, wordTrig = false },
     t([[\times ]])),
 
+    -- LaTeX-style quotes: "" -> ``|''
+    s({ trig = '""', dscr = "LaTeX-style quotes", wordTrig = false },
+    fmta([[``<>'']], { i(1) })),
+
     -- inverse: "Ainvs" -> "A^{-1}"
     s({ trig = "(%w+)invs", dscr = "^{-1} inverse", regTrig = true, wordTrig = false, condition = math },
     f(function(_, snip) return snip.captures[1] .. "^{-1}" end, {})),
