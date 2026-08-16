@@ -65,6 +65,7 @@ require("lazy").setup(
     })
 
 require("defaults")
+require("colors")
 require("lsp_cmp")
 --require("ts")
 --require("jukit")

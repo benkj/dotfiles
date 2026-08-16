@@ -5,6 +5,7 @@ local f    = ls.function_node
 local d    = ls.dynamic_node
 local sn   = ls.snippet_node
 local t    = ls.text_node
+local r    = ls.restore_node
 local fmta = require("luasnip.extras.fmt").fmta
 
 local function math()
@@ -142,19 +143,28 @@ end
 table.insert(fn_snippets, s({ trig = "rm",  dscr = "\\mathrm{}",        condition = math },
 fmta([[\mathrm{<>}<>]], { i(1), i(0) })))
 
-table.insert(fn_snippets, s({ trig = "td",  dscr = "^{} superscript",   condition = math },
-fmta([[^{<>}<>]], { i(1), i(0) })))
-
-table.insert(fn_snippets, s({ trig = "^(",  dscr = "^{()} superscript", condition = math },
-fmta([[^{(<>)}<>]], { i(1), i(0) })))
-
--- Autosnippets: expand immediately without Tab
 ls.add_snippets("tex", fn_snippets)
 
+-- Autosnippets: expand immediately without Tab
 ls.add_snippets("tex", {
 
     s({ trig = "__", dscr = "_{} subscript", condition = math, wordTrig = false },
     fmta([[_{<>}<>]], { i(1), i(0) })),
+
+    s({ trig = "_rm", dscr = "_{\\mathrm } subscript", condition = math, wordTrig = false },
+    fmta([[_{\mathrm{<>}}<>]], { i(1), i(0) })),
+
+    s({ trig = "^^", dscr = "^{} subscript", condition = math, wordTrig = false },
+    fmta([[^{<>}<>]], { i(1), i(0) })),
+
+    s({ trig = "^rm", dscr = "^{\\mathrm } subscript", condition = math, wordTrig = false },
+    fmta([[^{\mathrm{<>}}<>]], { i(1), i(0) })),
+
+    s({ trig = "^(",  dscr = "^{()} superscript", condition = math },
+    fmta([[^{(<>)}<>]], { i(1), i(0) })),
+    
+    s({ trig = "_(",  dscr = "_{()} superscript", condition = math },
+    fmta([[_{(<>)}<>]], { i(1), i(0) })),
 
     s({ trig = "xx", dscr = "\\times", condition = math, wordTrig = false },
     t([[\times ]])),
@@ -203,14 +213,17 @@ local mat = function(args, snip)
             table.insert(nodes, r(ins_indx, tostring(j).."x"..tostring(k), i(1)))
             ins_indx = ins_indx+1
         end
-        table.insert(nodes, t{"\\\\", ""})
+        if j < rows then
+            table.insert(nodes, t({ "\\\\", "" })) 
+        else
+            table.insert(nodes, t("\\\\"))
+        end
     end
     return sn(nil, nodes)
 end
 
--- full snippet
 ls.add_snippets("tex", {
-    s({ trig='([bBpvV])mat(%d+)x(%d+)([ar])', regTrig=true, name='matrix', dscr='matrix trigger lets go'},
+    s({ trig='([bBpvV])mat(%d+)x(%d+)(a?)', regTrig=true, name='matrix', dscr='matrix trigger lets go'},
     fmta([[
     \begin{<>}<>
     <>

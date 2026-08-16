@@ -61,34 +61,45 @@ local notebook_cell_miniai_spec = function(opts)
     return require("notebook-cells").miniai_spec(opts,'#[| ]%%')
 end
 
+-- Preserve Neovim 0.12's built-in treesitter an/in before mini.ai claims those keys
+--[[
+local copy_keymap = function(mode, from_lhs, to_lhs)
+    local keymap = vim.fn.maparg(from_lhs, mode, false, true)
+    local rhs = keymap.callback or keymap.rhs
+    vim.keymap.set(mode, to_lhs, rhs, { desc = keymap.desc })
+end
+copy_keymap('x', 'an', '<Leader>ts')
+copy_keymap('x', 'in', '<Leader>tS')
+]]--
+
 local gen_spec = require('mini.ai').gen_spec
 require('mini.ai').setup({
     custom_textobjects = {
-      -- Tweak argument to be recognized only inside `()` between `;`
-      a = gen_spec.argument({ brackets = { '%b()' }, separator = ';' }),
+        a = gen_spec.argument({ brackets = { '%b()' }, separator = ';' }),
+        f = gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }, { use_nvim_treesitter = false }),
+        c = gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }, { use_nvim_treesitter = false }),
+        b = gen_spec.treesitter({ a = '@block.outer', i = '@block.inner' }, { use_nvim_treesitter = false }),
+        h = notebook_cell_miniai_spec,
+        ['|'] = gen_spec.pair('|', '|', { type = 'non-balanced' }),
+    },
+    mappings = {
+        -- Main textobject prefixes
+        around = 'a',
+        inside = 'i',
 
-      -- Tweak function call to not detect dot in function name
-      --f = gen_spec.function_call({ name_pattern = '[%w_]' }),
+        -- Next/last textobjects
+        -- NOTE: This (deliberately) overrides Neovim>=0.12 built-in incremental
+        -- selection mappings. See `:h MiniAi-default-an-in` for more details.
+        around_next = 'aK',
+        inside_next = 'iK',
+        around_last = 'aL',
+        inside_last = 'iL',
 
-      f = gen_spec.treesitter({ a = '@function.outer', i = '@function.inner' }),
-      c = gen_spec.treesitter({ a = '@class.outer', i = '@class.inner' }),
-      b = gen_spec.treesitter({ a = '@block.outer', i = '@block.inner' }),
-
-      h = notebook_cell_miniai_spec,
-
-      -- Make `|` select both edges in non-balanced way
-      ['|'] = gen_spec.pair('|', '|', { type = 'non-balanced' }),
-    }
+        -- Move cursor to corresponding edge of `a` textobject
+        goto_left = 'g[',
+        goto_right = 'g]',
+    },
 })
-
-local ts_move=require("nvim-treesitter-textobjects.move")
-vim.keymap.set({ "n", "x", "o" }, "]f", function()
-    ts_move.goto_next_start("@function.outer", "textobjects")
-end)
-vim.keymap.set({ "n", "x", "o" }, "[f", function()
-    ts_move.goto_previous_start("@function.outer", "textobjects")
-end)
-
 
 -- Mini Hi Patterns
 --
@@ -176,7 +187,6 @@ MiniSurround.setup({
     -- Number of lines within which surrounding is searched
     n_lines = 100,
 })
-
 
 -- Mini Clue 
 

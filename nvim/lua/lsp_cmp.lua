@@ -53,6 +53,9 @@ local function in_latex_ref()
     return before:match('\\%a*ref{[^}]*$') ~= nil
         or before:match('\\%a*cite{[^}]*$') ~= nil
 end
+local function not_in_latex_ref()
+    return not in_latex_ref()
+end
 
 cmp.setup({
     snippet = {
@@ -72,13 +75,9 @@ cmp.setup({
         { name = 'nvim_lsp' },
         { name = 'nvim_lsp_signature_help' },
         -- { name = 'latex_symbols' },
-        { name = 'luasnip' },
-        {
-            name = 'buffer',
-            entry_filter = function()
-                return not in_latex_ref()
-            end,
-        },
+        { name = 'luasnip', entry_filter = not_in_latex_ref  },
+        { name = 'path' },
+        { name = 'buffer', entry_filter = not_in_latex_ref },
     }),
     window = {
         completion = cmp.config.window.bordered(),

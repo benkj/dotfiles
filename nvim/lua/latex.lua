@@ -121,11 +121,13 @@ vim.api.nvim_create_autocmd({"BufEnter", "BufWinEnter"}, {
             if rev1 == nil then
                 return nil
             end
-            local cmd = "latexdiff-vc --flatten --git --force -r " .. rev1
+            local cmd = "latexdiff-vc --flatten --git --force"
+            --local cmd = "latexdiff-vc --flatten --git --force -r " .. rev1
             if rev2 ~= nil then
                 cmd = cmd .. " -r "  .. rev2
             end
-            cmd = cmd .. " " .. file
+            cmd = cmd .. " -r " .. rev1 .. " " .. file
+            --cmd = cmd .. " " .. file
 
             local handle = io.popen(cmd .. " 2>&1")
             if not handle then
