@@ -53,7 +53,7 @@ return {
             'c',
             'cpp',
             'fish',
-            'gitcommit',
+            --'gitcommit',
             'html',
             'json',
             'json5',
@@ -69,5 +69,25 @@ return {
             'vim',
             'vimdoc',
         }
+
+        vim.api.nvim_create_autocmd('FileType', {
+            callback = function(args)
+                local filetype = args.match
+                local language = vim.treesitter.language.get_lang(filetype) or filetype
+
+                -- skip buffers with no matching parser (e.g. non-code buffers)
+                if not vim.treesitter.language.add(language) then return end
+
+                -- keep VimTeX's regex syntax alone
+                if filetype == 'tex' or filetype == 'plaintex' then
+                    --vim.treesitter.start(args.buf, language)
+                    --vim.bo[args.buf].syntax = 'ON'
+                else
+                    vim.treesitter.start(args.buf, language)
+                    vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+                end
+
+            end,
+        })
     end,
 }

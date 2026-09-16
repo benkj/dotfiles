@@ -38,6 +38,7 @@ fish_add_path /opt/bin
 fish_add_path $HOME/.binlinks/
 fish_add_path $HOME/.local/bin/
 fish_add_path $HOME/.juliaup/bin
+fish_add_path $HOME/.julia/bin
 fish_add_path $HOME/.venvs/nvim/bin/
 fish_add_path /snap/bin/
 

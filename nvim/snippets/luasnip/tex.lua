@@ -160,10 +160,10 @@ ls.add_snippets("tex", {
     s({ trig = "^rm", dscr = "^{\\mathrm } subscript", condition = math, wordTrig = false },
     fmta([[^{\mathrm{<>}}<>]], { i(1), i(0) })),
 
-    s({ trig = "^(",  dscr = "^{()} superscript", condition = math },
+    s({ trig = "^(",  dscr = "^{()} superscript", condition = math, wordTrig = false },
     fmta([[^{(<>)}<>]], { i(1), i(0) })),
     
-    s({ trig = "_(",  dscr = "_{()} superscript", condition = math },
+    s({ trig = "_(",  dscr = "_{()} superscript", condition = math, wordTrig = false },
     fmta([[_{(<>)}<>]], { i(1), i(0) })),
 
     s({ trig = "xx", dscr = "\\times", condition = math, wordTrig = false },

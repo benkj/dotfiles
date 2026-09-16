@@ -36,7 +36,7 @@ require("luasnip.loaders.from_lua").lazy_load({
 })
 
 require("luasnip.loaders.from_vscode").lazy_load({
-    exclude_filetypes = { "tex", "latex", "plaintex" }
+    exclude = { "tex", "latex", "plaintex" }
 })
 
 

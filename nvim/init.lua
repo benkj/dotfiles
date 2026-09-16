@@ -29,12 +29,10 @@ require("lazy").setup(
         -- 'akinsho/bufferline.nvim',
         -- 'ludovicchabant/vim-gutentags',
         'kyazdani42/nvim-web-devicons',
-        'JuliaEditorSupport/julia-vim',
+        --'JuliaEditorSupport/julia-vim',
         'nvim-lualine/lualine.nvim',
         { 'nvim-mini/mini.nvim', version = '*' },
         'nvim-tree/nvim-web-devicons',
-        -- { "junegunn/fzf", build = "./install --all" },
-        -- "junegunn/fzf.vim",
         --  LSP and treesitter
         'neovim/nvim-lspconfig',
         'onsails/lspkind.nvim',
@@ -48,7 +46,7 @@ require("lazy").setup(
         'hrsh7th/cmp-path',
         'hrsh7th/cmp-cmdline',
         'saadparwaiz1/cmp_luasnip',
-        -- 'kdheepak/cmp-latex-symbols',
+        'kdheepak/cmp-latex-symbols',
         --'quangnguyen30192/cmp-nvim-ultisnips',
         --
         --
@@ -58,7 +56,7 @@ require("lazy").setup(
         --"iurimateus/luasnip-latex-snippets.nvim",
         'micangl/cmp-vimtex',
         'f3fora/cmp-spell',
-        'RRethy/base16-nvim',
+        --'RRethy/base16-nvim',
         "rebelot/kanagawa.nvim",
         --    {'luk400/vim-jukit', lazy=false},
         {import = "plugins"}
@@ -67,8 +65,6 @@ require("lazy").setup(
 require("defaults")
 require("colors")
 require("lsp_cmp")
---require("ts")
---require("jukit")
 require("mini")
 require("keymaps")
 require("latex")
